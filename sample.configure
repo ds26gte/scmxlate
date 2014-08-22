@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Last modified: 2005-03-15 
+# Last modified: 2014-08-22
 
 # Set scmxlate to the pathname of scmxlate/scmxlate.scm
 # on your system, if you know it.  Otherwise let
@@ -25,15 +25,15 @@ findscmxlate() {
   done
   echo Couldn\'t find scmxlate/scmxlate.scm on your machine.
   echo Trying to get it off the Internet.
-  wget http://www.ccs.neu.edu/~dorai/scmxlate/scmxlate.tar.gz
-  test -f scmxlate.tar.gz &&\
-  gunzip scmxlate.tar.gz &&\
-  tar xf scmxlate.tar &&\
+  git clone https://github.com/ds26gte/scmxlate
+  test -d scmxlate &&\
   scmxlate=scmxlate/scmxlate.scm
 
   test "$scmxlate" && return
   echo Unable to get scmxlate off the Internet.
-  echo scmxlate is available at 
+  echo scmxlate is available at
+  echo github.com/ds26gte/scmxlate.
+  echo The scmxlate manual is at
   echo http://www.ccs.neu.edu/~dorai/scmxlate/scmxlate.html.
   echo You may want to get and install scmxlate manually,
   echo then try configure again.
@@ -43,10 +43,10 @@ findscmxlate() {
 adieu() {
   for f in `cat dialects/files-to-be-ported.scm`
   do
-    if test -f my-$f 
+    if test -f my-$f
     then
       echo File my-$f created.
-      echo You may rename it to $f and 
+      echo You may rename it to $f and
       echo \ \ put it in your PATH.
     fi
   done
@@ -56,7 +56,7 @@ makeit() {
   findscmxlate
   echo Ignore questions on console.
   case "$dialect" in
-    bigloo) 
+    bigloo)
     echo bigloo|bigloo -eval '(load "'$scmxlate'")';;
 
     chicken)
@@ -84,7 +84,7 @@ makeit() {
     echo petite|petite $scmxlate;;
 
     plt)
-    echo If you are not a PLT developer, you probably shouldn\'t 
+    echo If you are not a PLT developer, you probably shouldn\'t
     echo be needing to do this.
     echo plt|mzscheme -f $scmxlate;;
 
@@ -117,12 +117,12 @@ echodialectsuggestions() {
   if test "$clisppresent" -o "$guilepresent"
   then
     echo
-    echo Note: The following looks promising on your system: 
+    echo Note: The following looks promising on your system:
     echo
     test "$guilepresent" &&\
-    echo \ \ ./configure --dialect=guile 
+    echo \ \ ./configure --dialect=guile
     test "$clisppresent" &&\
-    echo \ \ ./configure --dialect=clisp 
+    echo \ \ ./configure --dialect=clisp
   fi
 }
 
@@ -137,7 +137,7 @@ echohelp() {
   sed -e '$!N;$!N;$!N;$!N;$!N;s/\n/ /g' |\
   sed -e 's/^/  /g'
 
-  echo 
+  echo
   echo If your dialect D is listed above, type
   echo \ \ ./configure --dialect=D
   echodialectsuggestions
@@ -156,7 +156,7 @@ then
   if test "$dialect" = "guile" -a -f ./dialects/make-guile-version
   then
     ./dialects/make-guile-version
-  else 
+  else
     makeit
   fi
 else echohelp

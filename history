@@ -5,6 +5,8 @@ Aug 22, 2014
 No need to temporarily set load to primitive-load for Guile
 anymore (?).  Bug reported by Andrea Girotto.
 
+Added to github. Changed sample.configure to refer to github.
+
 Apr 21, 2012
 
 Chicken seems to have stopped using getenv since after about v.
