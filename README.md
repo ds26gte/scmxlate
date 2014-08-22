@@ -1,0 +1,10 @@
+# scmxlate
+
+scmxlate is a tool for configuring Scheme packages to run
+on the dialect of Scheme or Common Lisp on your system.
+
+scmxlate is available at
+http://www.ccs.neu.edu/~dorai/scmxlate/scmxlate.html.
+
+The file INSTALL contains instructions on how to install
+scmxlate.
