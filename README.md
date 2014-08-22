@@ -13,4 +13,4 @@ This creates a directory named `scmxlate`. Note down the full
 pathname of the file `scmxlate.scm` in this directory.
 
 The scmxlate manual is at
-http://www.ccs.neu.edu/~dorai/scmxlate/scmxlate.html.
+http://www.ccs.neu.edu/~dorai/scmxlate/index.html.
