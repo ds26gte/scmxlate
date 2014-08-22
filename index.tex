@@ -1,4 +1,4 @@
-% last change: 2012-04-21
+% last change: 2014-08-22
 
 \input tex2page
 \input plainsection
@@ -13,7 +13,6 @@
 \fi
 \let\re\subsection
 
-
 \advance\hoffset .75 true in
 \advance\hsize -1.5 true in
 
@@ -21,8 +20,8 @@
 
 %\ignorenextinputtimestamp
 
-\centerline{\urlh{scmxlate.tar.bz2}{\ifx\shipout\totheWeb
-Download \fi Version 20120421}} % last modified
+\centerline{\urlh{https://github.com/ds26gte/scmxlate}{\ifx\shipout\totheWeb
+Download \fi Version 20140822}}
 
 \centerline{\urlh{../index.html}{Dorai Sitaram}}
 
@@ -91,8 +90,14 @@ configuration details in the package.  What do
 you do?
 
 First, you need to have Scmxlate installed on {\em
-your} system.  Get the \urlh{scmxlate.tar.gz}{Scmxlate tarball} and unpack
-it, creating a directory called \p{scmxlate}.  Place
+your} system.  Get Scmxlate from
+\urlh{https://github.com/ds26gte/scmxlate}{GitHub}:
+
+\p{
+git clone https://github.com/ds26gte/scmxlate
+}
+
+\n This creates a directory called \p{scmxlate}.  Place
 this directory in its entirety in a place that is
 convenient to you.  Among the files in this directory
 is the file \p{scmxlate.scm}.  Note down
