@@ -7,7 +7,7 @@ To get scmxlate:
 
 ```
 git clone https://github.com/ds26gte/scmxlate
-```
+````
 
 This creates a directory named `scmxlate`. Note down the full
 pathname of the file `scmxlate.scm` in this directory.
