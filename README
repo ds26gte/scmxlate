@@ -1,0 +1,7 @@
+.= scmxlate
+
+scmxlate is a tool for configuring Scheme packages to run on
+another dialect of Scheme or Common Lisp.
+
+The scmxlate manual is at
+http://ds26gte.github.io/scmxlate/index.html.
