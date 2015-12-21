@@ -1,0 +1,86 @@
+= scm2cl
+
+(scm2cl is part of the https://github.com/ds26gte/scmxlate[scmxlate distribution].)
+
+`scm2cl` is a Common Lisp
+program that converts Scheme
+code to Common Lisp.  Its goal is to remove the tedium of
+transcribing a large Scheme file into CL, not to avoid human
+intervention altogether.  You may have to do some
+hand-tuning — `scm2cl` will assist you here too.
+
+`scm2cl` understands R5RS Scheme, including the
+high-level macros (`define-syntax`, `let-syntax`,
+and `letrec-syntax`), plus some common Scheme
+extensions, viz, `andmap`, `append!`,
+`call-with-input-string`,
+`call-with-output-string`, `delete-file`, `exit`,
+`file-exists?`,
+`fluid-let`, `flush-output`, `getenv`, `get-output-string`,
+`open-input-string`, `open-output-string`,
+`ormap`, `read-line`, `reverse!`,
+`string-index`, `string-reverse-index`, `system`.
+
+== Usage
+
+With some Common Lisp dialects, you can call `scm2cl.cl`
+on the operating-system command-line, with the Scheme file
+to be converted as argument:
+
+  scm2cl.cl scmfile.scm
+
+This produces the CL file in `scmfile.cl`.
+
+If this is not possible, you may load `scm2cl.cl` into
+your Common Lisp and invoke the function `scheme-to-cl`.
+Eg,
+
+  (load "scm2cl.cl")
+  (scheme-to-cl "scmfile.scm")
+
+== Human Intervention
+
+=== `funcall` and `function`
+
+`scm2cl` is good at inserting `funcall` and `function`
+(aka `#’`) where needed, but not perfect.  It will,
+however, draw your attention to code locations where a
+`funcall` _may_ be needed.  `scm2cl` will not
+miss any of these problem spots, so you don’t have to hunt
+for `funcall` locations on your own.
+
+No similar signaling is offered for potential
+`+#’+` locations.
+(The reason is that this would lead to too many signals for
+`+#’+`, the vast majority of them being red herrings.
+Detecting `funcall` is less noisy, but still not perfect
+--- which is why `scm2cl` suggests passively instead of
+inserting actively.)
+
+=== Some additional definitions
+
+The CL file produced by `scm2cl` may use some of the
+procedures defined in the file
+`scheme-procs.cl`.  (`scheme-procs.cl`  contains some Scheme-like
+procedure definitions for CL.)  At the end of the
+conversion, `scm2cl` will give you the exact list of
+Scheme procedures from
+`scheme-procs.cl` actually used.  You will need to
+incorporate these procedure definitions into the
+converted code.  How you do it is up to your
+convenience.
+
+=== Caveats
+
+Only “escape” continuations are allowed for
+`call-with-current-continuation`.
+
+“Named” ``let``s whose names begin with the substring
+`"loop"` are converted into iterative CL loops.
+`scm2cl` assumes that such named ``let``s were intended to
+write iterative (“tail-recursive”) loops, and translates
+accordingly.  This will cause error if the `let` wasn’t so
+intended.
+
+Named ``let``s with names that do not begin with `loop`
+are converted using CL `labels`.
