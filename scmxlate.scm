@@ -8,7 +8,7 @@
 ;(require (lib "trace.ss"))
 
 'eval-in-cl-also
-(define *scmxlate-version* "20140822") ;last change
+(define *scmxlate-version* "20161111") ;last change
 
 'eval-in-cl-also
 (begin
@@ -112,6 +112,17 @@
     (call-with-input-file f
       (lambda (i)
         (copy-port-to-port i o)))))
+
+'eval-in-cl-also
+(define copy-binary-file-to-port
+  (lambda (f o)
+    (call-with-input-file f
+      (lambda (i)
+        (let loop ()
+          (let ((c (read-char i)))
+            (if (not (eof-object? c))
+                (begin (write-char c o) (loop))
+                #f)))))))
 
 'eval-in-cl-also
 (define *files-to-be-ported*
@@ -362,7 +373,8 @@
             (let loop ((r '()))
               (if (memv (peek-char i) '(#\# #\"))
                   (loop (cons (read-a-line i) r))
-                  (if (null? r) (list r f)
+                  (if (or (null? r) (eqv? *dialect* 'chez)) 
+                      (list (reverse r) f)
                       (let ((new-f (string-append f ".temp")))
                         (ensure-file-deleted new-f)
                         (call-with-output-file new-f
@@ -420,40 +432,44 @@
            (shell-lines (car x))
            (src (cadr x))
            (tgt (string-append src ".so")))
-      (set! tgt (compile-file-to-file src tgt))
+      (if (and (eqv? *dialect* 'chez) (pair? shell-lines))
+          (compile-script src tgt)
+        (set! tgt (compile-file-to-file src tgt)))
       (if tgt
           (begin
-            (display tgt) (display " created.") (newline)
-            (if (memv *dialect* '(chicken mitscheme))
-                (if (not (null? shell-lines))
-                    (begin
-                      (display "Warning: Throwing out shell-magic ")
-                      (display "lines for compiled file!")
-                      (newline)
-                      (if (eqv? *dialect* 'chicken)
-                          (begin (display "For Chicken, this may not be a problem, ")
-                                 (display "as compiled code can query command args."))
-                          (display "This may or may not be right!"))
-                      (newline))
-                    #f)
-                #f)
-            (if (not (eqv? *dialect* 'mitscheme))
-                (begin
-                  (ensure-file-deleted f)
-                  (display "Copying ") (display tgt)
-                  (display " to ") (display f) (newline)
-                  (call-with-output-file f
-                    (lambda (o)
-                      (for-each
-                        (lambda (line)
-                          (display line o) (newline o))
-                        shell-lines)
-                      (copy-file-to-port tgt o)))
-                  (set! tgt f))
-                #f))
-          (begin (display "Compilation failed?")
-                 (newline)
-                 (set! tgt f)))
+           (display tgt) (display " created.") (newline)
+           (if (memv *dialect* '(chicken mitscheme))
+               (if (not (null? shell-lines))
+                   (begin
+                    (display "Warning: Throwing out shell-magic ")
+                    (display "lines for compiled file!")
+                    (newline)
+                    (if (eqv? *dialect* 'chicken)
+                        (begin (display "For Chicken, this may not be a problem, ")
+                               (display "as compiled code can query command args."))
+                      (display "This may or may not be right!"))
+                    (newline))
+                 #f)
+             #f)
+           (if (not (eqv? *dialect* 'mitscheme))
+               (begin
+                 (ensure-file-deleted f)
+                 (display "Copying ") (display tgt)
+                 (display " to ") (display f) (newline)
+                 (call-with-output-file f
+                   (lambda (o)
+                     (if (not (eqv? *dialect* 'chez))
+                         (for-each
+                           (lambda (line)
+                             (display line o) (newline o))
+                           shell-lines)
+                         #f)
+                     (copy-binary-file-to-port tgt o)))
+                 (set! tgt f))
+               #f))
+        (begin (display "Compilation failed?")
+               (newline)
+               (set! tgt f)))
       (display "If compilation failed, try without compile option.")
       (newline)
       tgt)))
