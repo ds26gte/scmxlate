@@ -1,6 +1,6 @@
 ;name conversions
 
-;last change 2009-04-10
+;last change 2016-12-18
 
 (defvar *scm2cl-fns-named-same*
   '(
@@ -87,6 +87,9 @@
 
     #+ecl getenv
     #+ecl si:getenv
+
+    #+mkcl getenv
+    #+mkcl mkcl:getenv
 
     #+clisp getenv
     #+clisp ext:getenv

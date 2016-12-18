@@ -1,6 +1,8 @@
 ":";exec clisp -q $0
 ":";exec lisp -Q -L $0
 
+;last change 2016-12-18
+
 (defvar *dialect* 'cl)
 
 (setq *load-verbose* nil)
@@ -70,6 +72,9 @@
 
   #+ecl
   (si:system c)
+
+  #+mkcl
+  (mkcl:system c)
 
   #+clozure
   (ccl::os-command c)
