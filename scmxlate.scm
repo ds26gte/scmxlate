@@ -8,7 +8,7 @@
 ;(require (lib "trace.ss"))
 
 'eval-in-cl-also
-(define *scmxlate-version* "20161111") ;last change
+(define *scmxlate-version* "20161219") ;last change
 
 'eval-in-cl-also
 (begin
@@ -781,40 +781,38 @@
 ;(define guile-load
 ;  (if (eqv? *dialect* 'guile) load #f))
 
+(define scmxlate-system
+  (lambda (s)
+    (if (eqv? *operating-system* 'unix)
+        (case *dialect*
+          ((bigloo chez chicken guile kawa mzscheme petite plt
+                   scheme48 scm stk stklos sxm umbscheme ypsilon)
+           (system s))
+          ((gambit)
+           (shell-command s))
+          ((gauche)
+           (sys-system s))
+          ((mitscheme)
+           ((if (environment-bound? user-initial-environment 'unix/system)
+                unix/system run-shell-command) s))
+          ((scsh)
+           (eval (let* ((i (make-string-input-port
+                             (string-append
+                               "(run ("
+                               s "))")))
+                        (e (read i)))
+                   e)
+                 (interaction-environment)))
+          (else (display "Do") (newline)
+                (display "  ") (display s) (newline)))
+        #f)))
+
 (define chmod+x
   (lambda (f)
     (if (and (eqv? *operating-system* 'unix)
              *shell-script?*
-             (not (and (eqv? *dialect* 'mitscheme) *compile?*))
-             )
-        (let ((chmod-cmd
-               (string-append "chmod +x " f)))
-          (case *dialect*
-            ((bigloo chez chicken guile kawa mzscheme petite plt
-                   scheme48
-                   scm stk stklos sxm umbscheme ypsilon)
-             (system chmod-cmd))
-            ((gambit)
-             (shell-command chmod-cmd))
-            ((gauche)
-             (sys-system chmod-cmd))
-            ((mitscheme)
-             ((if (environment-bound? user-initial-environment 'unix/system)
-                 unix/system run-shell-command) chmod-cmd))
-            ((scsh)
-             (eval (let* ((i (make-string-input-port
-                              (string-append
-                               "(run ("
-                               chmod-cmd "))")))
-                          (e (read i)))
-                     ;following causes (values) error in scsh
-                     ;0.6.2
-                     ;(close-input-port i)
-                     e)
-                   (interaction-environment)))
-            (else
-             (display "Do") (newline)
-             (display "  ") (display chmod-cmd) (newline))))
+             (not (and (eqv? *dialect* 'mitscheme) *compile?*)))
+        (scmxlate-system (string-append "chmod +x " f))
         #f)))
 
 (define *predefined-aliases*
