@@ -1,6 +1,6 @@
 ;translator macros
 
-;last change 2009-03-31
+;last change 2017-01-03
 
 (defvar *scm2cl-macros* (make-hash-table))
 
@@ -135,9 +135,8 @@
               (push (cons constructor `(function ,constructor))
                     *aliases*)))
         fields)
-  `(defstruct (,name (:conc-name
-                      ,(intern (concatenate 'string (symbol-name name) "."))))
-     ,@fields))
+  `(defstruct ,name ,@fields)
+  )
 
 (defun struct-setter-p (x)
   (and x (symbolp x)

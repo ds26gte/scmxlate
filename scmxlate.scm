@@ -8,7 +8,7 @@
 ;(require (lib "trace.ss"))
 
 'eval-in-cl-also
-(define *scmxlate-version* "20161219") ;last change
+(define *scmxlate-version* "20170103") ;last change
 
 'eval-in-cl-also
 (begin
@@ -416,7 +416,8 @@
 (define compile-possible?
   (lambda ()
     (and (eqv? *operating-system* 'unix)
-         (or (memv *dialect* '(chicken cl mzscheme plt))
+         (or (memv *dialect* '(;chicken
+                               cl mzscheme plt))
              (and (memv *dialect* '(chez petite))
                   (eqv? (current-eval) compile))
              (and (eqv? *dialect* 'mitscheme)
@@ -433,7 +434,9 @@
            (src (cadr x))
            (tgt (string-append src ".so")))
       (if (and (eqv? *dialect* 'chez) (pair? shell-lines))
-          (compile-script src tgt)
+          (begin
+            ;(printf "compile-script ~s ~s~%" src tgt)
+            (compile-script src tgt))
         (set! tgt (compile-file-to-file src tgt)))
       (if tgt
           (begin
@@ -456,15 +459,16 @@
                  (ensure-file-deleted f)
                  (display "Copying ") (display tgt)
                  (display " to ") (display f) (newline)
-                 (call-with-output-file f
-                   (lambda (o)
-                     (if (not (eqv? *dialect* 'chez))
+                 (if (eqv? *dialect* 'chez)
+                     (system
+                       (string-append "cp -p " tgt " " f))
+                     (call-with-output-file f
+                       (lambda (o)
                          (for-each
                            (lambda (line)
                              (display line o) (newline o))
                            shell-lines)
-                         #f)
-                     (copy-binary-file-to-port tgt o)))
+                         (copy-binary-file-to-port tgt o))))
                  (set! tgt f))
                #f))
         (begin (display "Compilation failed?")
@@ -490,7 +494,7 @@
 ;for dialects that have it
 
 (case *dialect*
-  ((chicken gambit guile ikarus mzscheme petite plt sxm ypsilon)
+  ((chez chicken gambit guile ikarus mzscheme petite plt sxm ypsilon)
    (set! write-nicely pretty-print))
   ((mitscheme)
    (set! write-nicely pp))
@@ -821,8 +825,11 @@
      '((file-or-directory-modify-seconds . file-modification-time)))
     ((chicken)
      '(
+       (false . #f)
        (file-or-directory-modify-seconds . file-modification-time)
        (getenv . get-environment-variable)
+       (null . '())
+       (true . #t)
        ))
     ((gauche)
      `(
@@ -830,9 +837,12 @@
        (delete-file . sys-remove)
        ;(eof . ,(with-input-from-string "" read-char))
        ;(file-or-directory-modify-seconds . file-mtime)
+       (false . #f)
        (flush-output . flush)
        (getenv . sys-getenv)
-       (system . sys-system)))
+       (null . '())
+       (system . sys-system)
+       (true . #t)))
     ((guile)
      '((andmap . and-map)
        (current-seconds . current-time)
@@ -852,19 +862,29 @@
                       'unix/system 'run-shell-command))
        ))
     ((chez petite)
-     '((flush-output . flush-output-port)
+     '((false . #f)
+       (flush-output . flush-output-port)
+       (null . '())
+       (true . #t)
        ))
     ((gambit)
-     `((flush-output . force-output)
+     `(
+       (false . #f)
+       (flush-output . force-output)
        ;(get-output-string . close-output-port)
+       (null . '())
        (system . shell-command)
        ;(system . ,(call-with-input-string "##shell-command" read))
+       (true . #t)
        ))
     ((scheme48)
      '((delete-file . unlink)
+       (false . #f)
        (getenv . lookup-environment-variable)
-       (open-output-string . make-string-output-port)
        (get-output-string . string-output-port-output)
+       (null . '())
+       (open-output-string . make-string-output-port)
+       (true . #t)
        ))
     ((scsh)
      '((current-seconds . time)
@@ -872,7 +892,12 @@
        (get-output-string . string-output-port-output)
        (open-output-string . make-string-output-port)))
     ((scm)
-     '((current-seconds . current-time)))
+     '(
+       (current-seconds . current-time)
+       (false . #f)
+       (null . '())
+       (true . #t)
+       ))
     ((stklos)
      '((current-seconds . current-time)
        (flush-output . flush)))

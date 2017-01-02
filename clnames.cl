@@ -1,6 +1,6 @@
 ;name conversions
 
-;last change 2016-12-18
+;last change 2017-01-03
 
 (defvar *scm2cl-fns-named-same*
   '(
@@ -36,6 +36,7 @@
 
 (defvar *scm2cl-fns-named-diff*
   '(
+    add1 1+
     andmap every
     append! nconc
     assoc scheme-assoc
@@ -104,6 +105,7 @@
     #+abcl ext:getenv
 
     inexact->exact identity
+    input-port? input-stream-p
     integer? integerp
     integer->char code-char
     length list-length
@@ -157,14 +159,15 @@
     string-ci<=? string-not-greaterp
     string-ci>=? string-not-lessp
     string-append scheme-string-append
-    string-index scheme-string-index
+    ;string-index scheme-string-index
     string-length length
     string->list scheme-string->list
     string->number scheme-string->number
     string-ref char
-    string-reverse-index scheme-string-reverse-index
+    ;string-reverse-index scheme-string-reverse-index
     string-set! scheme-string-set!
     string->symbol scheme-string->symbol
+    sub1 1-
     substring subseq
     symbol? scheme-symbol?
     symbol->string scheme-symbol->string
@@ -194,6 +197,7 @@
     with-output-to-port scheme-with-output-to-port
     write prin1
     zero? zerop
+
     ))
 
 (defvar *scm2cl-kwds-named-diff*
@@ -213,6 +217,10 @@
     ;we don't want it to clash with CL's loop macro
     loop loop! 
     set! setq
+
+    false nil
+    null nil
+    true t
     ))
 
 (defvar *predefined-aliases* '())
