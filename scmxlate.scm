@@ -8,7 +8,7 @@
 ;(require (lib "trace.ss"))
 
 'eval-in-cl-also
-(define *scmxlate-version* "20170103") ;last change
+(define *scmxlate-version* "20170117") ;last change
 
 'eval-in-cl-also
 (begin
@@ -193,8 +193,6 @@
       (newline))
     #f)
 
-;old loc of eval1 defn
-
 (define exists-file?
   (case *dialect*
     ((bigloo chez chicken gambit gauche guile ikarus kawa mitscheme mzscheme
@@ -328,12 +326,13 @@
 
 (define eval1
   (case *dialect*
+    ((gauche ikarus scheme48 scsh)
+     (lambda (e) (eval e (interaction-environment))))
     ((guile)
      (if (>= *dialect-version* 1.6)
          (lambda (e) (eval e (interaction-environment)))
          eval))
     ((mitscheme) (lambda (e) (eval e user-initial-environment)))
-    ((gauche scheme48 scsh) (lambda (e) (eval e (interaction-environment))))
     (else eval)))
 
 ;get "system" for PLT Scheme
@@ -373,7 +372,7 @@
             (let loop ((r '()))
               (if (memv (peek-char i) '(#\# #\"))
                   (loop (cons (read-a-line i) r))
-                  (if (or (null? r) (eqv? *dialect* 'chez)) 
+                  (if (or (null? r) (eqv? *dialect* 'chez))
                       (list (reverse r) f)
                       (let ((new-f (string-append f ".temp")))
                         (ensure-file-deleted new-f)
@@ -822,7 +821,12 @@
 (define *predefined-aliases*
   (case *dialect*
     ((bigloo)
-     '((file-or-directory-modify-seconds . file-modification-time)))
+     '(
+       (false . #f)
+       (file-or-directory-modify-seconds . file-modification-time)
+       (null . '())
+       (true . #t)
+       ))
     ((chicken)
      '(
        (false . #f)
@@ -851,6 +855,10 @@
        (load . primitive-load)
        (ormap . or-map)
        ))
+    ((ikarus)
+     '((false . #f)
+       (null . '())
+       (true . #t)))
     ((kawa)
      '((flush-output . force-output)))
     ((mitscheme)
