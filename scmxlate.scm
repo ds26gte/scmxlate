@@ -8,7 +8,7 @@
 ;(require (lib "trace.ss"))
 
 'eval-in-cl-also
-(define *scmxlate-version* "20170117") ;last change
+(define *scmxlate-version* "20200219") ;last change
 
 'eval-in-cl-also
 (begin
@@ -195,8 +195,8 @@
 
 (define exists-file?
   (case *dialect*
-    ((bigloo chez chicken gambit gauche guile ikarus kawa mitscheme mzscheme
-             petite plt scm scsh stk stklos sxm umbscheme ypsilon)
+    ((bigloo chez chibi chicken gambit gauche guile ikarus kawa mitscheme mzscheme
+             petite plt racket scm scsh stk stklos sxm umbscheme ypsilon)
      file-exists?)
     ((scheme48)
      (lambda (f)
@@ -210,8 +210,8 @@
 
 (define obliterate-file
   (case *dialect*
-    ((bigloo chez gambit guile ikarus kawa mitscheme mzscheme petite plt
-             pscheme scsh scm sxm umbscheme ypsilon)
+    ((bigloo chez chibi gambit guile ikarus kawa mitscheme mzscheme petite plt
+             pscheme racket scsh scm sxm umbscheme ypsilon)
      delete-file)
     ((gauche) sys-remove)
     ((scheme48) unlink)
@@ -249,7 +249,7 @@
 
 (define dialect-getenv
   (case *dialect*
-    ((bigloo chez guile ikarus mzscheme petite plt
+    ((bigloo chez guile ikarus mzscheme petite plt racket
              scm scsh stk stklos sxm ypsilon)
      (lambda (ev) (getenv ev)))
     ((gambit) (lambda (ev)
@@ -257,7 +257,7 @@
                                         (lambda () (getenv ev)))))
     ((gauche) (lambda (ev) (sys-getenv ev)))
     ((scheme48) (lambda (ev) (lookup-environment-variable ev)))
-    ((chicken mitscheme) (lambda (ev) (get-environment-variable ev)))
+    ((chibi chicken mitscheme) (lambda (ev) (get-environment-variable ev)))
     (else (lambda (ev) #f))))
 
 (define determine-os
@@ -278,8 +278,8 @@
      (car *operating-systems-supported*))
     (else
      (case *dialect*
-       ((bigloo chez chicken gambit gauche guile ikarus mitscheme mzscheme
-                petite plt scheme48 scm scsh stk stklos sxm ypsilon)
+       ((bigloo chez chibi chicken gambit gauche guile ikarus mitscheme mzscheme
+                petite plt racket scheme48 scm scsh stk stklos sxm ypsilon)
         (determine-os))
        ((pscheme) 'windows)
        ((umbscheme) 'unix)
@@ -313,7 +313,7 @@
 ;for PLT and Guile, check version
 
 (case *dialect*
-  ((mzscheme plt)
+  ((mzscheme plt racket)
    (set! *dialect-version*
      (string->number
       (regexp-replace "^([0-9]+).*"
@@ -349,7 +349,7 @@
 
 ;get compiler for MzScheme
 
-(if (memv *dialect* '(mzscheme plt))
+(if (memv *dialect* '(mzscheme plt racket))
     (eval '(require (lib "compile.ss")))
     #f)
 
@@ -383,7 +383,7 @@
 
 (define compile-file-to-file
   (case *dialect*
-    ((chez mzscheme petite plt)
+    ((chez mzscheme petite plt racket)
      (lambda (fi fo) (compile-file fi fo) fo))
     ((chicken)
      (lambda (fi fo)
@@ -417,6 +417,7 @@
     (and (eqv? *operating-system* 'unix)
          (or (memv *dialect* '(;chicken
                                cl mzscheme plt))
+             ;TODO: what about racket?
              (and (memv *dialect* '(chez petite))
                   (eqv? (current-eval) compile))
              (and (eqv? *dialect* 'mitscheme)
@@ -493,7 +494,7 @@
 ;for dialects that have it
 
 (case *dialect*
-  ((chez chicken gambit guile ikarus mzscheme petite plt sxm ypsilon)
+  ((chez chicken gambit guile ikarus mzscheme petite plt racket sxm ypsilon)
    (set! write-nicely pretty-print))
   ((mitscheme)
    (set! write-nicely pp))
@@ -607,7 +608,7 @@
                                    ((k . stuff) (syntax k)))
                       output))))
             ,(caddr e)))))
-    ((mzscheme plt)
+    ((mzscheme plt racket)
      (lambda (e)
        (if *compile?* (eval e) #f)
        e)
@@ -654,7 +655,7 @@
                (datum->syntax-object (syntax k)
                  (apply ,(caddr e)
                    (cdr (syntax-object->datum x))))))))))
-    ((mzscheme plt)
+    ((mzscheme plt racket)
      (lambda (e)
        (let ((e `(define-syntax ,(cadr e)
                        (lambda (so)
@@ -788,7 +789,7 @@
   (lambda (s)
     (if (eqv? *operating-system* 'unix)
         (case *dialect*
-          ((bigloo chez chicken guile kawa mzscheme petite plt
+          ((bigloo chez chicken guile kawa mzscheme petite plt racket
                    scheme48 scm stk stklos sxm umbscheme ypsilon)
            (system s))
           ((gambit)
@@ -824,6 +825,13 @@
      '(
        (false . #f)
        (file-or-directory-modify-seconds . file-modification-time)
+       (null . '())
+       (true . #t)
+       ))
+    ((chibi)
+     '(
+       (false . #f)
+       (getenv . get-environment-variable)
        (null . '())
        (true . #t)
        ))
@@ -1041,8 +1049,8 @@
 ;exit Scheme if possible
 
 (case *dialect*
-  ((bigloo chez chicken gambit gauche guile kawa mzscheme petite plt pscheme
-	 scsh stk stklos sxm) (exit))
+  ((bigloo chez chibi chicken gambit gauche guile kawa mzscheme petite plt pscheme
+	 racket scsh stk stklos sxm) (exit))
   ((mitscheme) (%exit))
   ((scm) (quit))
   (else (display "You may exit Scheme now!")
