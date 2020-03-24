@@ -1,4 +1,4 @@
-% last change: 2016-12-19
+% last change: 2020-03-24
 
 %
 \input texrc
@@ -318,11 +318,12 @@ In the above, we used the symbol \q{guile} in the
 Scmxlate that Guile is one of the dialects into which
 the package can be translated.  The list of dialect symbols
 recognized by Scmxlate is: \q{bigloo}, \q{chez},
-\q{cl},
-\q{gambit}, \q{gauche}, \q{guile}, \q{kawa}, \q{mitscheme},
-\q{mzscheme}, \q{other}, \q{petite}, \q{pscheme}, \q{scheme48},
-\q{scm}, \q{sxm}, \q{scsh}, \q{stk}, \q{stklos},
-\q{umbscheme}.
+\q{chibi}, \q{chicken}, \q{cl},
+\q{gambit}, \q{gauche}, \q{guile}, \q{ikarus}, \q{kawa}, \q{mitscheme},
+\q{mzscheme}, \q{other}, \q{petite}, \q{plt}, \q{pscheme},
+\q{racket}, \q{scheme48},
+\q{scm}, \q{scsh}, \q{stk}, \q{stklos}, \q{sxm},
+\q{umbscheme}, \q{ypsilon}.
 
 The symbols \q{mzscheme} and \q{plt}
 may both be used for PLT Scheme: two symbols are
@@ -331,7 +332,7 @@ called for --- with \q{mzscheme} perhaps being used to create a
 self-sufficient MzScheme script file, and \q{plt} to construct a
 PLT module library.
 
-The symbol \q{cl} stands  for
+The symbol \q{cl} stands for
 Common Lisp.\f{Note that
 Scmxlate can readily determine if it’s running
 on Common Lisp (as opposed to Scheme), so it will not query the user

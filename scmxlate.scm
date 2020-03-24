@@ -8,7 +8,7 @@
 ;(require (lib "trace.ss"))
 
 'eval-in-cl-also
-(define *scmxlate-version* "20200219") ;last change
+(define *scmxlate-version* "20200324") ;last change
 
 'eval-in-cl-also
 (begin
@@ -604,6 +604,18 @@
                  (datum->syntax
                    (lambda (so output)
                      (old-datum->syntax-object
+                      (syntax-case so ()
+                                   ((k . stuff) (syntax k)))
+                      output))))
+            ,(caddr e)))))
+    ((chibi)
+     ;Chibi's datum->syntax's 1st arg must be an identifier
+     (lambda (e)
+       `(define-syntax ,(cadr e)
+          (let* ((old-datum->syntax datum->syntax)
+                 (datum->syntax
+                   (lambda (so output)
+                     (old-datum->syntax
                       (syntax-case so ()
                                    ((k . stuff) (syntax k)))
                       output))))
