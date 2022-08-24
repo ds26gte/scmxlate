@@ -218,11 +218,6 @@
     ((stk stklos)
      (lambda (f)
        (system (string-append "rm " f))))
-;    ((gambit)
-;     ;## causes problems with other Scheme dialects
-;     (lambda (f)
-;       ((eval (call-with-input-string "##shell-command" read))
-;        (string-append "rm " f))))
     (else (lambda (f) #t))))
 
 (define ensure-file-deleted
@@ -589,8 +584,10 @@
                        (let ((datum->syntax (lambda (x y) y))
                              (syntax->datum (lambda (x) x)))
                          (,(caddr e) (cons ',(cadr e) _args)))))))
-         (if (and #f (eqv? *dialect* 'gambit))
-           ;disabled; but why was it ever needed?
+         (if (eqv? *dialect* 'gambit)
+             ;; To use Gambit macros outside the file where they are
+             ;; defined you need to eval them to add them to the runtime
+             ;; (or include them in each file).
              `(begin ,e-t
                      (eval ',e-t))
              e-t))))
