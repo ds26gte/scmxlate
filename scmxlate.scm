@@ -1,3 +1,5 @@
+;last modified 2022-12-19
+
 (cond ((not 'nil)
        ;Common Lisp
        (load
@@ -8,7 +10,7 @@
 ;(require (lib "trace.ss"))
 
 'eval-in-cl-also
-(define *scmxlate-version* "20200324") ;last change
+(define *scmxlate-version* "20221219") ;last change
 
 'eval-in-cl-also
 (begin
@@ -730,7 +732,7 @@
                                     (lambda (e) (display (eval1 e) o))
                                     (cdr x)))
                                   ((scmxlate-postamble)
-                                   (translate-source-file o))
+                                   (translate-source-file o 0))
                                   ((scmxlate-postprocess)
                                    (set! *postprocessing*
                                      (append *postprocessing* (cdr x))))
@@ -937,7 +939,7 @@
 
 'eval-in-cl-also
 (define translate-source-file
-  (lambda (o)
+  (lambda (o num-of-lines-to-skip)
     (if (not *source-file-translated?*)
         ;scmxlate-postamble may already have translated
         ;source file!
@@ -945,13 +947,15 @@
          (set! *source-file-translated?* #t)
          (call-with-input-file *source-file*
            (lambda (i)
-             (if (char=? (peek-char i) #\#)
-                 (begin
-                  (set! *shell-script?* #t)
-                  (read-a-line i)
-                  (display "; ensure shell-magic above" o)
-                  (newline o))
-                 #f)
+             (cond ((> num-of-lines-to-skip 0)
+                    (let loop ((n num-of-lines-to-skip))
+                      (if (= n 0) #f
+                          (begin (read-a-line i) (loop (- n 1))))))
+                   ((char=? (peek-char i) #\#)
+                    (set! *shell-script?* #t)
+                    (read-a-line i)
+                    (display "; ensure shell-magic above" o)
+                    (newline o)))
              (display ";Configured for " o)
              (case *dialect*
                ((cl)
@@ -1007,6 +1011,11 @@
           (let* ((user-override-file
                   (let ((f (string-append "scmxlate-" file-to-be-ported)))
                     (and (exists-file? f) f)))
+                 (skip-lines-file
+                   (let ((f (string-append "scmxlate-skip-lines-" file-to-be-ported)))
+                     (and (exists-file? f) f)))
+                 (num-of-lines-to-skip
+                   (if skip-lines-file (call-with-input-file skip-lines-file read) 0))
                  (dialect-override-file
                   (let ((f (string-append "dialects/"
                                           *dialect-s* file-to-be-ported)))
@@ -1022,7 +1031,7 @@
                   (list
                     user-override-file
                     dialect-override-file ))
-                (translate-source-file o)))
+                (translate-source-file o num-of-lines-to-skip)))
 
             ;compile?
             (if (eqv? *compile?* 'ask)
