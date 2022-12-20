@@ -1,4 +1,4 @@
-;last modified 2022-12-19
+;last modified 2022-12-20
 
 (cond ((not 'nil)
        ;Common Lisp
@@ -43,6 +43,8 @@
 'eval-in-cl-also
 (define *aliases* '())
 ;(define *predefined-aliases* '())
+'eval-in-cl-also
+(define *num-of-lines-to-skip* 0)
 ;'eval-in-cl-also
 ;(define *target-file* #f)
 'eval-in-cl-also
@@ -732,7 +734,7 @@
                                     (lambda (e) (display (eval1 e) o))
                                     (cdr x)))
                                   ((scmxlate-postamble)
-                                   (translate-source-file o 0))
+                                   (translate-source-file o))
                                   ((scmxlate-postprocess)
                                    (set! *postprocessing*
                                      (append *postprocessing* (cdr x))))
@@ -939,7 +941,7 @@
 
 'eval-in-cl-also
 (define translate-source-file
-  (lambda (o num-of-lines-to-skip)
+  (lambda (o)
     (if (not *source-file-translated?*)
         ;scmxlate-postamble may already have translated
         ;source file!
@@ -947,8 +949,8 @@
          (set! *source-file-translated?* #t)
          (call-with-input-file *source-file*
            (lambda (i)
-             (cond ((> num-of-lines-to-skip 0)
-                    (let loop ((n num-of-lines-to-skip))
+             (cond ((> *num-of-lines-to-skip* 0)
+                    (let loop ((n *num-of-lines-to-skip*))
                       (if (= n 0) #f
                           (begin (read-a-line i) (loop (- n 1))))))
                    ((char=? (peek-char i) #\#)
@@ -970,7 +972,7 @@
              (display *scmxlate-version* o)
              (display "," o) (newline o)
              (display ";(c) Dorai Sitaram, " o) (newline o)
-             (display ";http://www.ccs.neu.edu/~dorai/" o)
+             (display ";https://github.com/ds26gte/scmxlate" o)
              (display "scmxlate/scmxlate.html" o)
              (newline o) (newline o)
              (set! *reading-source-file?* #t)
@@ -1009,19 +1011,19 @@
           (set! *calls-disallowed* '())
           (set! *aliases* *predefined-aliases*)
           (let* ((user-override-file
-                  (let ((f (string-append "scmxlate-" file-to-be-ported)))
-                    (and (exists-file? f) f)))
+                   (let ((f (string-append "scmxlate-" file-to-be-ported)))
+                     (and (exists-file? f) f)))
                  (skip-lines-file
                    (let ((f (string-append "scmxlate-skip-lines-" file-to-be-ported)))
                      (and (exists-file? f) f)))
-                 (num-of-lines-to-skip
-                   (if skip-lines-file (call-with-input-file skip-lines-file read) 0))
                  (dialect-override-file
-                  (let ((f (string-append "dialects/"
-                                          *dialect-s* file-to-be-ported)))
-                    (and (exists-file? f) f)))
+                   (let ((f (string-append "dialects/"
+                              *dialect-s* file-to-be-ported)))
+                     (and (exists-file? f) f)))
                  (target-file
-                  (string-append "my-" file-to-be-ported)))
+                   (string-append "my-" file-to-be-ported)))
+            (set! *num-of-lines-to-skip*
+              (if skip-lines-file (call-with-input-file skip-lines-file read) 0))
             (ensure-file-deleted target-file)
             (call-with-output-file target-file
               (lambda (o)
@@ -1031,7 +1033,7 @@
                   (list
                     user-override-file
                     dialect-override-file ))
-                (translate-source-file o num-of-lines-to-skip)))
+                (translate-source-file o)))
 
             ;compile?
             (if (eqv? *compile?* 'ask)
@@ -1046,7 +1048,7 @@
                 #f)
 
             (if *compile?* (set! target-file (kompile target-file))
-              #f)
+                #f)
 
             (chmod+x target-file)
 
@@ -1056,7 +1058,7 @@
                    (display "'.") (newline)
                    (display "You may want to rename it.") (newline))
                   (else
-                   (for-each eval1 *postprocessing*)))
+                    (for-each eval1 *postprocessing*)))
             ))
         *files-to-be-ported*)))
 
