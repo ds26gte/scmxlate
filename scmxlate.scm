@@ -1,5 +1,3 @@
-;last modified 2022-12-20
-
 (cond ((not 'nil)
        ;Common Lisp
        (load
@@ -10,7 +8,7 @@
 ;(require (lib "trace.ss"))
 
 'eval-in-cl-also
-(define *scmxlate-version* "20221219") ;last change
+(define *scmxlate-version* "20221223") ;last change
 
 'eval-in-cl-also
 (begin
@@ -886,12 +884,15 @@
     ((kawa)
      '((flush-output . force-output)))
     ((mitscheme)
-     `((file-or-directory-modify-seconds . file-modification-time)
+     `((false . #f)
+       (file-or-directory-modify-seconds . file-modification-time)
        (gensym . generate-uninterned-symbol)
        (getenv . get-environment-variable)
+       (null . '())
        (open-input-string . string->input-port)
        (system . ,(if (environment-bound? user-initial-environment 'unix/system)
                       'unix/system 'run-shell-command))
+       (true . #t)
        ))
     ((chez petite)
      '((false . #f)
