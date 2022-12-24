@@ -932,7 +932,7 @@
        (true . #t)
        ))
     ((stklos)
-     '((current-seconds . current-time)
+     '(
        (false . #f)
        (flush-output . flush)
        (null . '())
