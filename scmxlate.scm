@@ -8,7 +8,7 @@
 ;(require (lib "trace.ss"))
 
 'eval-in-cl-also
-(define *scmxlate-version* "20221223") ;last change
+(define *scmxlate-version* "20221224") ;last change
 
 'eval-in-cl-also
 (begin
@@ -503,11 +503,7 @@
      (lambda (e o) (pprint e :port o))))
   ((mitscheme)
    (set! write-nicely pp))
-  ((stklos)
-   (set! write-nicely
-     (let ((pp (eval 'pretty-print)))
-       (lambda (e o)
-         (pp e :port o))))))
+  )
 
 'eval-in-cl-also
 (define names-defined
@@ -937,7 +933,10 @@
        ))
     ((stklos)
      '((current-seconds . current-time)
-       (flush-output . flush)))
+       (false . #f)
+       (flush-output . flush)
+       (null . '())
+       (true . #t)))
     ((sxm)
      '((current-seconds . current-time)
        ;(flush-output . flush)
