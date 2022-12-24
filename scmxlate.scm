@@ -505,8 +505,9 @@
    (set! write-nicely pp))
   ((stklos)
    (set! write-nicely
-     (lambda (e o)
-       (pretty-print e :port o)))))
+     (let ((pp (eval 'pretty-print)))
+       (lambda (e o)
+         (pp e :port o))))))
 
 'eval-in-cl-also
 (define names-defined
