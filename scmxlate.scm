@@ -498,6 +498,9 @@
 (case *dialect*
   ((chez chicken gambit guile ikarus mzscheme petite plt racket sxm ypsilon)
    (set! write-nicely pretty-print))
+  ((gauche)
+   (set! write-nicely
+     (lambda (e o) (pprint e :port o))))
   ((mitscheme)
    (set! write-nicely pp))
   ((stklos)
