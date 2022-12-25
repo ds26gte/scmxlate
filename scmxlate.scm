@@ -8,7 +8,7 @@
 ;(require (lib "trace.ss"))
 
 'eval-in-cl-also
-(define *scmxlate-version* "20221224") ;last change
+(define *scmxlate-version* "20221225") ;last change
 
 'eval-in-cl-also
 (begin
@@ -172,6 +172,15 @@
     ;sxm issues warnings for forward-refs,
     ;which can't all be removed anyway
     (warning-handler (lambda zzz #f))
+    #f)
+
+(if (eqv? *dialect* 'chicken)
+    (import
+      (chicken file)
+      (chicken pretty-print)
+      (chicken process)
+      (chicken process-context)
+      )
     #f)
 
 (if (eqv? *dialect* 'guile)
@@ -577,7 +586,15 @@
           (let ((datum->syntax (lambda (x y) y))
                 (syntax->datum (lambda (x) x)))
             (,(caddr e) (cons ',(cadr e) _args))))))
-    ((chicken scheme48 scsh)
+    ((chicken)
+     (lambda (e)
+       `(define-syntax ,(cadr e)
+          (er-macro-transformer
+            (lambda (__form __rename __compare)
+              (let ((datum->syntax (lambda (x y) y))
+                    (syntax->datum (lambda (x) x)))
+                (,(caddr e) __form)))))))
+    ((scheme48 scsh)
      (lambda (e)
        `(define-syntax ,(cadr e)
           (lambda (__form __rename __compare)
