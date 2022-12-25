@@ -175,12 +175,12 @@
     #f)
 
 (if (eqv? *dialect* 'chicken)
-    (import
-      (chicken file)
-      (chicken pretty-print)
-      (chicken process)
-      (chicken process-context)
-      )
+    (eval '(import
+             (chicken file)
+             (chicken pretty-print)
+             (chicken process)
+             (chicken process-context)
+             ))
     #f)
 
 (if (eqv? *dialect* 'guile)
