@@ -8,7 +8,7 @@
 ;(require (lib "trace.ss"))
 
 'eval-in-cl-also
-(define *scmxlate-version* "20221225") ;last change
+(define *scmxlate-version* "20221226") ;last change
 
 'eval-in-cl-also
 (begin
@@ -540,11 +540,13 @@
                          (let ((name (cadr x)))
                            (if (pair? name) (car name) name))
                          r)))
-                    ((and (>= n 2) (memv (car x) '(scmxlate-ignore-define
-						   scmxlate-ignore)))
+                    ((and (>= n 2) (memv (car x) '(scmxlate-ignoredef
+                                                    scmxlate-ignore-define
+                                                    scmxlate-ignore)))
                      (set! r
                        (append (cdr x) r)))
-                    ((and (>= n 2) (eqv? (car x) 'scmxlate-rename-define))
+                    ((and (>= n 2) (memv (car x) '(scmxlate-ignoredef-rename
+                                                    scmxlate-rename-define)))
                      (set! r
                        (append (map car (cdr x)) r)))
                     ((and (> n 3) (eqv? (car x) 'syntax-table-define))
@@ -707,9 +709,11 @@
                        (names (names-defined x))
                        (name (and (pair? names) (car names))))
                   (cond ((not (pair? x)) 'skip)
-                        ((and (not (memv a '(scmxlate-ignore-define
-					     scmxlate-ignore
-                                             scmxlate-rename-define)))
+                        ((and (not (memv a '(scmxlate-ignoredef
+                                              scmxlate-ignore-define
+                                              scmxlate-ignore
+                                              scmxlate-ignoredef-rename
+                                              scmxlate-rename-define)))
                               (memv name *names-defined*))
                          'skip)
                         (else
@@ -730,6 +734,7 @@
                                (else
                                 (case a
                                   ((scmxlate-rename
+                                     scmxlate-ignoredef-rename
                                     scmxlate-rename-define)
                                    (for-each
                                     (lambda (x-y)
@@ -780,7 +785,8 @@
                                   ((scmxlate-uncall)
                                    (set! *calls-disallowed*
                                      (append (cdr x) *calls-disallowed*)))
-                                  ((scmxlate-ignore-define
+                                  ((scmxlate-ignoredef
+                                     scmxlate-ignore-define
 				    scmxlate-ignore) #f)
                                   ((scmxlate-eval)
                                    (for-each eval1 (cdr x)))

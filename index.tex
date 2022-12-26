@@ -1,4 +1,4 @@
-% last change: 2020-03-24
+% last change: 2022-12-26
 
 %
 \input texrc
@@ -24,6 +24,8 @@ body { max-width: 450pt; }
 
 \advance\hoffset .75 true in
 \advance\hsize -1.5 true in
+
+\activettchar`
 
 \title{scmxlate}
 
@@ -168,7 +170,7 @@ Let us say you have a number of Scheme files in
 a directory that you intend to package as a
 distribution.  For specificity let’s say the name of the
 directory is `pkgdir` and you have three Scheme files in it,
-viz, `apple`, `orange.scm`, and `banana.ss`.
+viz, `apple`, `orange.scm`, and `banana.rkt`.
 There is no restriction on the names of these Scheme
 files: They may have any or no extension.  An end-user
 of your distribution will unpack it to produce a
@@ -176,7 +178,7 @@ of your distribution will unpack it to produce a
 it.
 
 Let us now say that you wrote the Scheme files in the
-MzScheme dialect of Scheme, but that the end-user
+Racket dialect of Scheme, but that the end-user
 uses the Guile dialect of Scheme.  In order for them to
 be able to create Guile versions of your files, you
 need to provide in `pkgdir` some configuration
@@ -191,7 +193,7 @@ translated,  viz.,
 \begintts
 "apple"
 "orange.scm"
-"banana.ss"
+"banana.rkt"
 \endtt
 and a file called `dialects-supported.scm` containing
 the line
@@ -207,7 +209,7 @@ and load `scmxlate.scm` (using the appropriate
 pathname for `scmxlate.scm` on their system, as
 described in Section~\ref{useconfig}).  Scmxlate will learn
 from \path{dialects/files-to-be-ported.scm} that the files
-`apple`, `orange.scm`, and `banana.ss` need to be
+`apple`, `orange.scm`, and `banana.rkt` need to be
 translated.  It will ask the user what the dialect is,
 offering as choices the dialects listed in
 \path{dialects/dialects-supported.scm}, plus a catch-all
@@ -231,7 +233,7 @@ the translation-result files are created in the
 `pkgdir` directory and have the same names as the
 original but with the prefix `my-` attached.  Thus,
 in this case, their names are `my-apple`,
-`my-orange.scm`, and `my-banana.ss`.
+`my-orange.scm`, and `my-banana.rkt`.
 
 In the following, we will for convenience use
 the following terms:
@@ -243,20 +245,20 @@ a translation;
 
 (iii) {\em target dialect}: the dialect translated to.
 
-\n In our example above, `apple` is an input
+In our example above, `apple` is an input
 file, `my-apple` is its corresponding output file,
 and Guile is the target dialect.
 
 \subsection{Dialect-configuration files}
 
 The output  file `my-apple` above uses Scmxlate’s
-default rules for an MzScheme-to-Guile translation.
+default rules for an Racket-to-Guile translation.
 These rules are general and cannot be expected to cover
 any peculiar translational information that may be
 relevant to the code in `apple`.  You can supply such
 additional information to Scmxlate via a {\em
 dialect-configuration file} called `guile-apple` in
-the `dialects` subdirectory.   Ie, the name of
+the `dialects` subdirectory.   I.e., the name of
 the dialect-configuration file for a given input file
 and a given dialect is formed from  the Scmxlate symbol
 for the dialect, followed by a hyphen, followed by the
@@ -270,8 +272,8 @@ particular, it can include definitions.  The order of
 the code in the dialect-configuration file is preserved
 in the output file.
 
-For instance, if the MzScheme code in `apple` made
-use of a nonstandard (MzScheme-only) primitive such as
+For instance, if the Racket code in `apple` made
+use of a nonstandard (Racket-only) primitive such as
 \q{file-or-directory-modify-seconds}, we could supply
 the following Guile definition in the
 dialect-configuration file,
@@ -305,10 +307,11 @@ in `dialects/guile-apple`:
     (> (vector-ref (stat f1) 9)
        (vector-ref (stat f2) 9))))
 \endtt
+
 When Scmxlate translates `apple`, it will directly
 incorporate this Guile definition into the output file
 `my-apple` and won’t even attempt to translate
-the MzScheme definition of the same name in the
+the Racket definition of the same name in the
 input file.
 
 \subsection{Target dialects}
@@ -325,12 +328,12 @@ recognized by Scmxlate is: \q{bigloo}, \q{chez},
 \q{scm}, \q{scsh}, \q{stk}, \q{stklos}, \q{sxm},
 \q{umbscheme}, \q{ypsilon}.
 
-The symbols \q{mzscheme} and \q{plt}
-may both be used for PLT Scheme: two symbols are
-provided in case two distinct types of translations are
-called for --- with \q{mzscheme} perhaps being used to create a
-self-sufficient MzScheme script file, and \q{plt} to construct a
-PLT module library.
+% The symbols \q{mzscheme} and \q{plt}
+% may both be used for PLT Scheme: two symbols are
+% provided in case two distinct types of translations are
+% called for --- with \q{mzscheme} perhaps being used to create a
+% self-sufficient MzScheme script file, and \q{plt} to construct a
+% PLT module library.
 
 The symbol \q{cl} stands for
 Common Lisp.\f{Note that
@@ -407,7 +410,7 @@ shell script.  Such text can be written using the
 subforms in Scheme and displays them on the output
 file.
 
-Eg, if you put the following at
+E.g., if you put the following at
 the very head of the `guile-apple` file:
 
 \begintts
@@ -437,7 +440,7 @@ specified in the dialect-configuration file occur in
 the output file before the translated counterpart of
 input file’s contents, and thus may be considered as
 {\em preamble} text.   Sometimes we need to add {\em
-postamble} text, ie, things that go {\em after} the
+postamble} text, i.e., things that go {\em after} the
 code from the input file.  In order to do this,
 place the directive
 
@@ -453,7 +456,7 @@ file.
 \re{{\tt scmxlate-postprocess}}
 
 One can also specify actions that need to performed
-after the output file has been written.  Eg, let’s say
+after the output file has been written.  E.g., let’s say
 we want the Guile output file for `apple` to be
 named `pear` rather than `my-apple`.  We can
 enclose Scheme code for achieving this inside the
@@ -464,21 +467,21 @@ Scmxlate directive \q{scmxlate-postprocess}:
   (rename-file "my-apple" "pear"))
 \endtt
 
-\re{{\tt scmxlate-ignore-define}}
+\re{{\tt scmxlate-ignoredef}}
 
 Sometimes the input file has a definition that the
 target dialect does not need, either because the target
 dialect already has it as a primitive, or because we
 wish to completely re-write input code that uses that
-definition.  Eg, if the target dialect is MzScheme,
+definition.  E.g., if the target dialect is Gambit,
 which already contains \q{reverse!}, any definition of
 \q{reverse!} in the input file can be ignored.
 
 \begintts
-(scmxlate-ignore-define reverse!)
+(scmxlate-ignoredef reverse!)
 \endtt
 
-\q{scmxlate-ignore-define} can have any number of
+\q{scmxlate-ignoredef} can have any number of
 arguments.  The definitions of all of them will be
 ignored.
 
@@ -488,11 +491,11 @@ Sometimes we want to rename certain identifiers from
 the input file.  One possible motivation is that
 these identifiers name nonstandard primitives that are
 provided under a different name in the target dialect.
-For instance, the Bigloo versions of the MzScheme
+For instance, the Bigloo versions of the Racket
 primitives \q{current-directory} and
 \q{file-or-directory-modify-seconds} are \q{chdir} and
 \q{file-modification-time} respectively.  So if your
-MzScheme input file uses \q{current-directory} and
+Racket input file uses \q{current-directory} and
 \q{file-or-directory-modify-seconds}, your Bigloo
 dialect-configuration file should contain
 
@@ -507,28 +510,29 @@ twosomes as arguments.  The left item is the name in
 the input file, and the right item is its proposed
 replacement.
 
-\re{{\tt scmxlate-rename-define}}
+\re{{\tt scmxlate-ignoredef-rename}}
 
 Sometimes the input file includes a definition
 for an operator that the target dialect already has as
-a primitive, but with a different name.   Eg, consider
+a primitive, but with a different name.   E.g., consider
 an input file that contains a definition for
-\q{nreverse}.  MzScheme has the same operator but with
+\q{nreverse}.  Gambit has the same operator but with
 name \q{reverse!}.  You could add the following to
-the MzScheme dialect-configuration file:
+the Gambit dialect-configuration file:
 
 \begintts
-(scmxlate-rename-define
+(scmxlate-ignoredef-rename
   (nreverse reverse!))
 \endtt
 
 Note that this is shorthand for
 
 \begintts
-(scmxlate-ignore-define nreverse)
+(scmxlate-ignoredef nreverse)
 (scmxlate-rename
   (nreverse reverse!))
 \endtt
+
 \re{{\tt scmxlate-prefix}}
 
 Another motivation for renaming is to avoid polluting
@@ -561,15 +565,15 @@ Sometimes we want parts of the dialect-configuration
 file to processed only when a condition holds.  For
 instance, we can use the following \q{cond}-like
 conditional in
-a dialect-configuration file for MzScheme to
+a dialect-configuration file to
 write out a  shell-magic
 line appropriate to the operating system:
 
 \begintts
 (scmxlate-cond
-  ((eqv? (system-type) ‘unix)
+  ((eqv? (system-type) 'unix)
    (scmxlate-insert *unix-shell-magic-line*))
-  ((eqv? (system-type) ‘windows)
+  ((eqv? (system-type) 'windows)
    (scmxlate-insert *windows-shell-magic-line*)))
 \endtt
 where \q{*unix-shell-magic-line*} and
@@ -675,7 +679,7 @@ Scmxlate.  Just add the filenames to
 `dialects/files-to-be-ported.scm`.  Customizing info
 tailored to each file can be added to the `dialects`
 directory as we have already described for the
-file `progfile`.  Ie, an Scsh customization file
+file `progfile`.  I.e., an Scsh customization file
 for `anotherfile.ss` would be
 `dialects/scsh-anotherfile.ss`.
 
@@ -713,8 +717,8 @@ preference to the default translation.
 You may wish for some extra CL code to precede or
 follow the translated `progfile` code.  For instance,
 you may wish to add some additional definitions before
-the translation to cover some MzScheme-specific
-procedures you may have used in `progfile`.  Eg,
+the translation to cover some Racket-specific
+procedures you may have used in `progfile`.  E.g.,
 
 \begintts
 (defun getenv (ev)
