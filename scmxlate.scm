@@ -8,7 +8,7 @@
 ;(require (lib "trace.ss"))
 
 'eval-in-cl-also
-(define *scmxlate-version* "20221226") ;last change
+(define *scmxlate-version* "20230101") ;last change
 
 'eval-in-cl-also
 (begin
@@ -504,6 +504,14 @@
 ;redefine write-nicely to use pretty-printer
 ;for dialects that have it
 
+(define stklos-pretty-print list)
+
+(case *dialect*
+  ((stklos)
+   (set! stklos-pretty-print
+     (lambda z
+       (apply pretty-print z)))))
+
 (case *dialect*
   ((chez chicken gambit guile ikarus mzscheme petite plt racket sxm ypsilon)
    (set! write-nicely pretty-print))
@@ -512,6 +520,10 @@
      (lambda (e o) (pprint e :port o))))
   ((mitscheme)
    (set! write-nicely pp))
+  ((stklos)
+   (set! write-nicely
+     (lambda (e o)
+       (stklos-pretty-print e :port o))))
   )
 
 'eval-in-cl-also
